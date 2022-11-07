@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+
+<head>
+  <title>Farmtorio</title>
+  <meta name="description" content="A text based race against time to make it big, with minimal chicken casualties along the way">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    html {
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 0;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+    }
+
+    .intro {
+      padding: 1rem;
+    }
+
+    .header {
+      display: flex;
+      background-color: lightgrey;
+      padding: 1rem;
+    }
+
+    .header .button-buy {
+      margin-left: auto;
+    }
+
+    .animal-container {
+      padding: 50px;
+      display: flex;
+      flex-wrap: wrap;
+    }
+
+    .animal-container .animal {
+      display: flex;
+      width: 80px;
+      margin-bottom: 2rem;
+    }
+
+    .animal-container .animal span {
+      margin-left: auto;
+    }
+
+    .animal-container .animal button {
+      margin-left: auto;
+    }
+
+    .graveyard-container {
+      padding: 1rem;
+      display: flex;
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+
+<body>
+  <section class="intro">
+    <p>
+      Welcome to Farmtorio, a text based race against time to make it big, with minimal chicken casualties along the way
+    </p>
+    <ul>
+      <li>Start with $1000</li>
+      <li>You lose $20 per day</li>
+      <li>You can buy a chicken for $20</li>
+      <li>Each chicken earns you $2 per day</li>
+      <li>Chickens lose 1 food per day</li>
+      <li>You can feed a chicken for $1</li>
+      <li>When a chicken's food reaches 0 it dies</li>
+      <li>When your money hits $0, you lose</li>
+    </ul>
+  </section>
+
+  <section class="header">
+    <span id="header">Day 0, $1000</span>
+    <button class="button-buy" onclick="buy()">Buy Chicken $20</button>
+  </section>
+  <section class="animal-container" id="animals">No chickens</section>
+  <section class="graveyard-container" id="graveyard">
+  </section>
+</body>
+<script>
+  const game = {
+    chickens: [],
+    money: 1000,
+    day: 0,
+    graveyeard: 0
+  }
+
+  function render() {
+    document.getElementById('header').innerHTML = `Day ${game.day}, $${game.money}`;
+
+    renderAnimals();
+  }
+
+  function renderAnimals() {
+    const container = document.getElementById('animals');
+
+    if (game.chickens.length === 0) {
+      container.innerHTML = 'No chickens';
+    } else {
+      container.innerHTML = '';
+    }
+
+    container.innerHTML.length = 0;
+    for (let i = 0; i < game.chickens.length; i++) {
+      const c = game.chickens[i]
+      container.innerHTML += `<div class="animal"><span>${c.food}</span><button onclick="feed(${i})">Feed</button></div>`;
+    }
+  }
+
+  function buy() {
+    game.money -= 20;
+    game.chickens.push({
+      food: 10
+    })
+    this.render();
+  }
+
+  function feed(index) {
+    game.chickens[index].food = 10;
+    game.money -= 1;
+    this.render();
+  }
+
+  // get loop
+  game.interval = setInterval(() => {
+    game.money -= 20;
+    game.money += game.chickens.length * 2;
+
+    if (game.money <= 0) {
+      document.body.innerHTML = '';
+      document.body.innerHTML += `You are bankrupt. Your farm has been taken. Your assets have been sized. Your animals have been culled.`
+      document.body.innerHTML += `</br> You survived ${game.day} days.`
+      document.body.innerHTML += `</br> ${game.graveyeard} chickens perished under your watch.`
+      document.body.innerHTML += `</br></br><button onclick="window.location.reload()">Try again</button>`
+      clearInterval(game.interval);
+      return;
+    }
+
+
+    for (let i = 0; i < game.chickens.length; i++) {
+      game.chickens[i].food -= 1;
+      if (game.chickens[i].food === 0) {
+        game.chickens[i] = undefined;
+        document.getElementById('graveyard').innerHTML += '<span style="color: red; margin-right: 1rem;">x</span>'
+        game.graveyeard += 1;
+      }
+    }
+    game.chickens = game.chickens.filter(c => c !== undefined);
+    this.render();
+    game.day += 1;
+  }, 1000)
+</script>
